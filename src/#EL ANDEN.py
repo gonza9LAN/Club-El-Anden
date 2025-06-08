@@ -181,15 +181,15 @@ def Cerrar():
 
 def Siguiente(TipoHoja):
     global iMenu , FondoMenu , iPrecios ,  FondoPrecios
-    if TipoHoja == "src/Imagenes/Fondos/HojasMenu":
+    if TipoHoja == "HojasMenu":
         iMenu += 1
-        FondoMenu = "src/Imagenes/Fondos" + HojasMenu[iMenu] + ".png"
+        FondoMenu = "src/Imagenes/Fondos/" + HojasMenu[iMenu] + ".png"
         PonerFondo(FondoMenu, ventanaMenu)
         BotonesMenu(TipoHoja)
         MostrarMenu()
-    if TipoHoja == "src/Imagenes/Fondos/HojasPrecios":
+    if TipoHoja == "HojasPrecios":
         iPrecios += 1
-        FondoPrecios = "src/Imagenes/Fondos" + HojasPrecios[iPrecios] + ".png"
+        FondoPrecios = "src/Imagenes/Fondos/" + HojasPrecios[iPrecios] + ".png"
         PonerFondo(FondoPrecios, ventanaPrecios)
         BotonesMenu(TipoHoja)
         MostrarPrecios()
@@ -198,13 +198,13 @@ def Atras(TipoHoja):
     global iMenu , FondoMenu , iPrecios ,  FondoPrecios
     if TipoHoja == "src/Imagenes/Fondos/HojasMenu":
         iMenu -= 1
-        FondoMenu = "src/Imagenes/Fondos" + HojasMenu[iMenu] + ".png"
+        FondoMenu = "src/Imagenes/Fondos/" + HojasMenu[iMenu] + ".png"
         PonerFondo(FondoMenu, ventanaMenu)
         BotonesMenu(TipoHoja)
         MostrarMenu()
     if TipoHoja == "src/Imagenes/Fondos/HojasPrecios":
         iPrecios -= 1
-        FondoPrecios = "src/Imagenes/Fondos" + HojasPrecios[iPrecios] + ".png"
+        FondoPrecios = "src/Imagenes/Fondos/" + HojasPrecios[iPrecios] + ".png"
         PonerFondo(FondoPrecios, ventanaPrecios)
         BotonesMenu(TipoHoja)
         MostrarPrecios()
@@ -1163,14 +1163,14 @@ def ReestablecerDatosReserva(NumeroIngresado):
         with open(NombreArchivoReservas, 'r') as file:
             ArchivoReservas = json.load(file)
 
-        if NombreArchivoReservas == "Reservas.json":
+        if NombreArchivoReservas == "src/JSON/Reservas.json":
             for reserva in ArchivoReservas:
                 if reserva['Numero Reserva'] == str(NumeroIngresado):
                     DeporteReserva = reserva['Deporte']
                     DiaReserva = reserva['Dia']
                     HorarioReserva = reserva['Horario']
                     CanchaReserva = reserva['Cancha']
-                    ArchivoDeporte = DeporteReserva + ".json"
+                    ArchivoDeporte = "src/JSON/" + DeporteReserva + ".json"
                     with open(ArchivoDeporte, 'r') as file:
                         Archivo = json.load(file)
 
@@ -1185,12 +1185,12 @@ def ReestablecerDatosReserva(NumeroIngresado):
                                                 messagebox.showinfo("Exito" , f"El estado de la {CanchaReserva} de {DeporteReserva}, el dia {DiaReserva} a las {HorarioReserva} ha sido cambiado a 'Disponible'")
                     with open(ArchivoDeporte, 'w') as file:
                         json.dump(Archivo, file, indent=4)
-        if NombreArchivoReservas == "ReservasRestaurante.json":
+        if NombreArchivoReservas == "src/JSON/ReservasRestaurante.json":
              for reserva in ArchivoReservas:
                 if reserva['Numero Reserva'] == str(NumeroIngresado):
                     DiaReserva = reserva['Dia']
                     CantidadComensales = reserva['Numero de comensales']
-                    ArchivoJSON = 'Restaurante.json'
+                    ArchivoJSON = 'src/JSON/Restaurante.json'
                     DiasData = CargarDatosJSON()[0]
                     DiasData[DiaReserva]["Lugares Disponibles"] += CantidadComensales
                     DiasData[DiaReserva]["Lugares Ocupados"] -= CantidadComensales
@@ -1397,17 +1397,17 @@ def Menu():
     ventanaMenu.grab_set()
 
     iMenu = 0
-    FondoMenu = HojasMenu[iMenu] + ".png"
+    FondoMenu = "src/Imagenes/Fondos/" + HojasMenu[iMenu] + ".png"
     PonerFondo(FondoMenu, ventanaMenu)
     BotonesMenu("HojasMenu")
     MostrarMenu()
 
 def BotonesMenu(TipoHoja):
-    if TipoHoja == "src/Imagenes/Fondos/HojasMenu":
+    if TipoHoja == "HojasMenu":
         i = iMenu
         ventana = ventanaMenu
         Lista = HojasMenu
-    if TipoHoja == "src/Imagenes/Fondos/HojasPrecios":
+    if TipoHoja == "HojasPrecios":
         i = iPrecios
         ventana = ventanaPrecios
         Lista = HojasPrecios
@@ -1483,7 +1483,7 @@ def Restaurant():
         )
     BotonMenu.place(x=920, y=300)    
 
-ArchivoJSON = 'Restaurante.json'
+ArchivoJSON = 'src/JSON/Restaurante.json'
 def CargarDatosJSON():
     try:
         with open(ArchivoJSON, 'r') as archivo:
@@ -1962,14 +1962,14 @@ def GenerarNumeroReserva():
 
 def CargarCanchas(DeporteElegido):
     global NombreArchivo , ListaCanchas
-    PonerFondo(f"{DeporteElegido}.png" , ventanaPrincipal)
+    PonerFondo(f"src/Imagenes/Fondos/{DeporteElegido}.png" , ventanaPrincipal)
     BotonesSideBar()
     MostrarBotonReservas(DeporteElegido)
     DiaElegido = Dia.get()
     HorarioElegido = Horario.get()
 
     if DiaElegido != "Seleccione un Dia" and HorarioElegido != "Seleccione un Horario":
-        NombreArchivo = f"{DeporteElegido}.json"
+        NombreArchivo = f"src/JSON/{DeporteElegido}.json"
         ListaCanchas = CargarArchivo(NombreArchivo)
         if not ListaCanchas:
             return

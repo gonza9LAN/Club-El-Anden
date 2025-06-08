@@ -350,9 +350,9 @@ def VerReservas(TipoReservaSeleccionado):
         return
     ventanaSeleccion.destroy()
     if TipoReservaSeleccionado == "Canchas":
-        NombreArchivoReservas = "Reservas.json"
+        NombreArchivoReservas = "src/JSON/Reservas.json"
     elif TipoReservaSeleccionado == "Restaurante":
-        NombreArchivoReservas = "ReservasRestaurante.json"
+        NombreArchivoReservas = "src/JSON/ReservasRestaurante.json"
     PantallaReservas()
     TablaReservas()
     FramesReservas()
@@ -442,7 +442,7 @@ def VerReservas(TipoReservaSeleccionado):
     )
     BuscarEstado.pack(side="left", padx=10)
 
-    if NombreArchivoReservas == "ReservasRestaurante.json":
+    if NombreArchivoReservas == "src/JSON/ReservasRestaurante.json":
         BuscarCancha.pack_forget()
         BuscarDeporte.pack_forget()
         BuscarEstado.pack_forget()
@@ -520,9 +520,9 @@ def EliminarReserva(TipoReservaSeleccionado):
         return
     ventanaSeleccion.destroy()
     if TipoReservaSeleccionado == "Canchas":
-        NombreArchivoReservas = "Reservas.json"
+        NombreArchivoReservas = "src/JSON/Reservas.json"
     elif TipoReservaSeleccionado == "Restaurante":
-        NombreArchivoReservas = "ReservasRestaurante.json"    
+        NombreArchivoReservas = "src/JSON/ReservasRestaurante.json"    
     
     VentanaTexto()
 
@@ -542,7 +542,7 @@ def ReestablecerDatosReserva(NumeroIngresado):
         with open(NombreArchivoReservas, 'r') as file:
             ArchivoReservas = json.load(file)
 
-        if NombreArchivoReservas == "Reservas.json":
+        if NombreArchivoReservas == "src/JSON/Reservas.json":
             for reserva in ArchivoReservas:
                 if reserva['Numero Reserva'] == str(NumeroIngresado):
                     DeporteReserva = reserva['Deporte']
@@ -569,7 +569,7 @@ def ReestablecerDatosReserva(NumeroIngresado):
                 if reserva['Numero Reserva'] == str(NumeroIngresado):
                     DiaReserva = reserva['Dia']
                     CantidadComensales = reserva['Numero de comensales']
-                    ArchivoJSON = 'Restaurante.json'
+                    ArchivoJSON = 'src/JSON/Restaurante.json'
                     DiasData = CargarDatosJSON()[0]
                     DiasData[DiaReserva]["Lugares Disponibles"] += CantidadComensales
                     DiasData[DiaReserva]["Lugares Ocupados"] -= CantidadComensales
@@ -713,7 +713,7 @@ def VerCanchas(Deporte):
     PantallaCanchas(Deporte)
     TablaCanchas()
     FramesCanchas()
-    ArchivoJSON = Deporte + ".json"
+    ArchivoJSON = "src/JSON/" + Deporte + ".json"
     data = LeerCanchasJSON(ArchivoJSON)
 
     if data:
@@ -1088,7 +1088,7 @@ def PantallaMenu():
 
 def GestionarMenu():
     PantallaMenu()
-    MenuData = LeerMenuJSON("Menu.json")
+    MenuData = LeerMenuJSON("src/JSON/Menu.json")
     if MenuData:
         MostrarTablaDeMenu(MenuData)
     else:
@@ -1226,7 +1226,7 @@ def EditarLugaresDisponibles(event, tree, data):
 
 def VerDisponibilidad():
     PantallaDisponibilidad()
-    data_disponibilidad = LeerDisponibilidadJSON("Restaurante.json")
+    data_disponibilidad = LeerDisponibilidadJSON("src/JSON/Restaurante.json")
 
     if data_disponibilidad:
         MostrarDatosDisponibilidad(data_disponibilidad)
