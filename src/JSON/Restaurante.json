@@ -1,0 +1,32 @@
+[
+    {
+        "Lunes": {
+            "Lugares Disponibles": 100,
+            "Lugares Ocupados": 0
+        },
+        "Martes": {
+            "Lugares Disponibles": 100,
+            "Lugares Ocupados": 8
+        },
+        "Miercoles": {
+            "Lugares Disponibles": 50,
+            "Lugares Ocupados": 0
+        },
+        "Jueves": {
+            "Lugares Disponibles": 120,
+            "Lugares Ocupados": 24
+        },
+        "Viernes": {
+            "Lugares Disponibles": 14,
+            "Lugares Ocupados": 36
+        },
+        "Sabado": {
+            "Lugares Disponibles": 17,
+            "Lugares Ocupados": 33
+        },
+        "Domingo": {
+            "Lugares Disponibles": 47,
+            "Lugares Ocupados": 3
+        }
+    }
+]

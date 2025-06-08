@@ -1,0 +1,49 @@
+[
+    {
+        "Entradas": {
+            "Empanadas": 3000,
+            "Alitas de Pollo": 3200,
+            "Nachos con Queso": 5000,
+            "Mini Hamburguesas": 4200,
+            "Papas Fritas": 2200,
+            "Bocadillos de Queso": 3600,
+            "Tortilla J&Q": 2600,
+            "Provoleta": 3600,
+            "Sopa": 1200
+        },
+        "Principal": {
+            "Hamburguesa": 6500,
+            "Pancho": 2900,
+            "Tacos de Pollo": 3500,
+            "Pizza Grande": 4200,
+            "Milanesa con Fritas": 4000,
+            "Sandwich J&Q": 3500,
+            "Ensalada Cesar": 3000,
+            "Pechuga a la Parrilla": 4800,
+            "Carne": 2500,
+            "sushi": 10000000
+        },
+        "Bebidas": {
+            "Agua": 1500,
+            "Agua Saborizada": 1600,
+            "Cerveza": 2200,
+            "Jugo Natural": 1800,
+            "Te Helado": 1600,
+            "Gaseosa": 1700,
+            "Limonada": 1800,
+            "Fernet con Coca": 2600,
+            "Nuvo": 70000
+        },
+        "Postres": {
+            "Flan": 2600,
+            "Brownie con Helado": 3000,
+            "Ensalada de Frutas": 2800,
+            "Cheesecake": 3200,
+            "Bocha de Helado": 2200,
+            "Lemon Pie": 3600,
+            "Tiramisu": 2800,
+            "Budin de Pan": 2600,
+            "ensalda de fruta": 2000
+        }
+    }
+]
