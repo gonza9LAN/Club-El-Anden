@@ -1,0 +1,6 @@
+customtkinter
+pillow
+pandas
+qrcode
+bcrypt
+python-dotenv

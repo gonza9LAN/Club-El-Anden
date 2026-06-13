@@ -1,1251 +1,635 @@
 import json
+import os
 import customtkinter as ctk
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox, Toplevel, simpledialog
 import pandas as pd
-from tkinter import messagebox, Toplevel, filedialog , simpledialog
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from dotenv import load_dotenv
 
-def CargarArchivo(NombreArchivo):
+load_dotenv()
+EMAIL_REMITENTE = os.getenv("EMAIL_REMITENTE")
+EMAIL_CONTRASENA = os.getenv("EMAIL_CONTRASENA")
+
+
+# ---------- UTILIDADES ----------
+def cargar_archivo(nombre_archivo):
     try:
-        with open(NombreArchivo, "r") as Archivo:
-            return json.load(Archivo)
+        with open(nombre_archivo, "r") as archivo:
+            return json.load(archivo)
     except (FileNotFoundError, json.JSONDecodeError) as e:
-        print("Error", f"Error al leer el archivo: {e}")
+        messagebox.showerror("Error", f"Error al leer el archivo: {e}")
         return []
 
-def PantallaAdministrador():
-    global ventanaAdministrador
-    ventanaAdministrador = ctk.CTk()
-    ventanaAdministrador.geometry("500x600")
-    ventanaAdministrador.title("El ANDEN - Administracion")
-    ventanaAdministrador.resizable(False, False)
-    ventanaAdministrador.attributes("-fullscreen", False)
-    ventanaAdministrador.configure(fg_color="black")
-
-def BotonesAdministrador():
-    texto = ctk.CTkLabel(
-                ventanaAdministrador,
-                text="Administrador",
-                text_color="white",
-                width=150,
-                height=100,
-                font=("Lalezar", 50),
-                anchor=ctk.W,
-                justify='left'
-            )
-    texto.place(x=100, y=5)
-
-    BotonDisponibilidad = ctk.CTkButton(
-        ventanaAdministrador,
-        text="Lugares Restaurante",
-        command=VerDisponibilidad,
-        border_width=2,
-        border_color="#2FB166",
-        font=("Lalezar", 20),
-        width=200,
-        height=20,
-        fg_color="black",
-        corner_radius=50,
-        hover_color="black"
-    )
-    BotonDisponibilidad.place(x=150, y=100)
-
-    BotonCanchas = ctk.CTkButton(
-        ventanaAdministrador,
-        text="Ver Canchas", 
-        command=SeleccionDeporte,
-        border_width=2,
-        border_color="#2FB166",
-        font=("Lalezar", 20),
-        width=200,
-        height=20,
-        fg_color="black",
-        corner_radius=50,
-        hover_color="black"
-    )
-    BotonCanchas.place(x=150, y=150)
-
-    BotonPreciosCanchas = ctk.CTkButton(
-        ventanaAdministrador,
-        text="Precios Canchas",
-        command=GestionarPreciosCanchas,
-        border_width=2,
-        border_color="#2FB166",
-        font=("Lalezar", 20),
-        width=200,
-        height=20,
-        fg_color="black",
-        corner_radius=50,
-        hover_color="black"
-    )
-    BotonPreciosCanchas.place(x=150, y=200)
-
-    BotonVerReservas = ctk.CTkButton(
-        ventanaAdministrador,
-        text="Ver Reservas",
-        command=lambda:SeleccionTipoReserva("Ver"),
-        border_width=2,
-        border_color="#2FB166",
-        font=("Lalezar", 20),
-        width=200,
-        height=20,
-        fg_color="black",
-        corner_radius=50,
-        hover_color="black"
-    )
-    BotonVerReservas.place(x=150, y=250)
-
-    BotonEliminarReservas = ctk.CTkButton(
-        ventanaAdministrador,
-        text="Eliminar Reserva",
-        command=lambda:SeleccionTipoReserva("Cancelar"),
-        border_width=2,
-        border_color="#2FB166",
-        font=("Lalezar", 20),
-        width=200,
-        height=20,
-        fg_color="black",
-        corner_radius=50,
-        hover_color="black"
-    )
-    BotonEliminarReservas.place(x=150, y=300)
-
-    BotonGestionarMenu = ctk.CTkButton(
-        ventanaAdministrador,
-        text="Gestionar Menu",
-        command=GestionarMenu,
-        border_width=2,
-        border_color="#2FB166",
-        font=("Lalezar", 20),
-        width=200,
-        height=20,
-        fg_color="black",
-        corner_radius=50,
-        hover_color="black"
-    )
-    BotonGestionarMenu.place(x=150, y=350)
-
-def Administrador():
-    PantallaAdministrador()
-    BotonesAdministrador()
-
-def EnviarMail(Destinatario , CuerpoMensaje , Asunto):
-    EmailRemitente = "elandenreservas@gmail.com"
-    EmailDestinatario = Destinatario
-    Contraseña = "lgug poom mjsz wrhj"
-    Mensaje = MIMEMultipart()
-    Mensaje["From"] = EmailRemitente
-    Mensaje["To"] = EmailDestinatario
-    Mensaje["Subject"] = Asunto
-    Cuerpo = CuerpoMensaje
-   
-    Mensaje.attach(MIMEText(Cuerpo, "plain"))
-    try:
-        if EmailDestinatario == "":
-            messagebox.showerror("ERROR", "No registraste ningun mail")
-        else:
-            servidor_smtp = smtplib.SMTP("smtp.gmail.com", 587)
-            servidor_smtp.starttls() 
-            servidor_smtp.login(EmailRemitente, Contraseña)
-            texto_mensaje = Mensaje.as_string()
-            servidor_smtp.sendmail(EmailRemitente, EmailDestinatario, texto_mensaje)
-            servidor_smtp.quit()
-            messagebox.showinfo("Exito", "Correo enviado con éxito.")
-    except Exception as e:
-        messagebox.showerror("ERROR" , f"Error al enviar el correo: {e}")
-
-def SeleccionTipoReserva(DestinoReserva):
-    global ventanaSeleccion
-    ventanaSeleccion = Toplevel(ventanaAdministrador)
-    ventanaSeleccion.title("Tipo de Reserva")
-    ventanaSeleccion.geometry("200x300")
-    ventanaSeleccion.resizable(False, False)
-    ventanaSeleccion.transient(ventanaAdministrador)  
-    ventanaSeleccion.lift()  
-    ventanaSeleccion.focus_set()  
-    ventanaSeleccion.grab_set()
-    ventanaSeleccion.configure(background="black")
-
-    Funcion = {"Cancelar": EliminarReserva, "Ver": VerReservas}.get(DestinoReserva)
-    if Funcion is None:
-        messagebox.showerror("ERROR", "Acción de reserva no válida.")
+def enviar_mail(destinatario, cuerpo_mensaje, asunto):
+    if not destinatario:
+        messagebox.showerror("ERROR", "No hay mail registrado.")
         return
-
-
-    texto = ctk.CTkLabel(
-        ventanaSeleccion,
-        text="Seleccione el Tipo de Reserva",
-        text_color="white",
-        width=100,
-        height=20,
-        font=("Lalezar", 15),
-        anchor="center",
-        justify='center'
-    )
-    texto.pack(pady=20)
-
-    BotonCanchas = ctk.CTkButton(
-        ventanaSeleccion, 
-        text="Canchas", 
-        width=150, 
-        height=50,  
-        command=lambda: Funcion("Canchas"), 
-        fg_color="#2FB166", 
-        text_color="white"
-    )
-    BotonCanchas.pack(pady=20)
-
-    BotonRestaurante = ctk.CTkButton(
-        ventanaSeleccion, 
-        text="Restaurante", 
-        width=150, 
-        height=50,  
-        command=lambda: Funcion("Restaurante"), 
-        fg_color="#2FB166", 
-        text_color="white"
-    )
-    BotonRestaurante.pack(pady=20)
-
-def CargarDatosJSON():
+    if not EMAIL_REMITENTE or not EMAIL_CONTRASENA:
+        messagebox.showwarning("Mail", "Credenciales de correo no configuradas (.env).")
+        return
     try:
-        with open(ArchivoJSON, 'r') as archivo:
-            return json.load(archivo)
-    except FileNotFoundError:
+        mensaje = MIMEMultipart()
+        mensaje["From"] = EMAIL_REMITENTE
+        mensaje["To"] = destinatario
+        mensaje["Subject"] = asunto
+        mensaje.attach(MIMEText(cuerpo_mensaje, "plain"))
+        servidor = smtplib.SMTP("smtp.gmail.com", 587)
+        servidor.starttls()
+        servidor.login(EMAIL_REMITENTE, EMAIL_CONTRASENA)
+        servidor.sendmail(EMAIL_REMITENTE, destinatario, mensaje.as_string())
+        servidor.quit()
+        messagebox.showinfo("Éxito", "Correo enviado con éxito.")
+    except Exception as e:
+        messagebox.showerror("ERROR", f"Error al enviar el correo: {e}")
 
-        return [
-            {
-                "Lunes": {"Lugares Disponibles": 50, "Lugares Ocupados": 0},
-                "Martes": {"Lugares Disponibles": 50, "Lugares Ocupados": 0},
-                "Miercoles": {"Lugares Disponibles": 50, "Lugares Ocupados": 0},
-                "Jueves": {"Lugares Disponibles": 50, "Lugares Ocupados": 0},
-                "Viernes": {"Lugares Disponibles": 50, "Lugares Ocupados": 0},
-                "Sabado": {"Lugares Disponibles": 50, "Lugares Ocupados": 0},
-                "Domingo": {"Lugares Disponibles": 50, "Lugares Ocupados": 0}
-            }
-        ]
-
-def GuardarDatosJSON(datos):
-    with open(ArchivoJSON, 'w') as archivo:
-        json.dump(datos, archivo, indent=4)
-
-def PantallaReservas():
-    global ventanaReservas
-    ventanaReservas = Toplevel(ventanaAdministrador)
-    ventanaReservas.title("Reservas")
-    ventanaReservas.geometry("950x650")
-    ventanaReservas.resizable(False, False)
-    ventanaReservas.attributes("-fullscreen", False)
-    ventanaReservas.configure(background="black")
-
-def TablaReservas():
-    global FrameTablaReservas
+def _estilo_tabla():
     style = ttk.Style()
     style.theme_use("clam")
     style.configure("Custom.Treeview.Heading", background="#2FB166", foreground="black")
-    style.configure(
-        "Custom.Treeview", 
-        background="black",
-        foreground="white",
-        fieldbackground="black",
-        highlightthickness=0,
-        highlightbackground="black", 
-        bd=1,
-        relief="solid"
-    )
+    style.configure("Custom.Treeview", background="black", foreground="white",
+                    fieldbackground="black", highlightthickness=0, bd=1, relief="solid")
     style.map("Custom.Treeview", background=[("selected", "#2FB166")])
 
-    FrameTablaReservas = ctk.CTkFrame(ventanaReservas, fg_color="black")
-    FrameTablaReservas.pack(fill="both", expand=True)
-
-    tree = ttk.Treeview(FrameTablaReservas, style="Custom.Treeview")
+def _crear_treeview(frame, columnas, anchos):
+    """Crea un Treeview con scrollbar dentro del frame dado."""
+    _estilo_tabla()
+    tree = ttk.Treeview(frame, style="Custom.Treeview")
     tree.pack(fill="both", expand=True, side="left")
-
-    scrollbar = ttk.Scrollbar(FrameTablaReservas, orient="vertical", command=tree.yview)
+    scrollbar = ttk.Scrollbar(frame, orient="vertical", command=tree.yview)
     scrollbar.pack(side="right", fill="y")
     tree.configure(yscrollcommand=scrollbar.set)
+    tree["columns"] = columnas
+    tree["show"] = "headings"
+    for col in columnas:
+        tree.heading(col, text=col)
+        tree.column(col, width=anchos.get(col, 100), anchor="center")
+    tree.tag_configure("data_row", background="black", foreground="white")
+    return tree
 
-def FramesReservas():
-    global FrameBusquedaReservas
-    FrameBusquedaReservas = ctk.CTkFrame(ventanaReservas, fg_color="black", bg_color="black")
-    FrameBusquedaReservas.pack(pady=10, fill="x", side="bottom")
+# ---------- PANTALLA PRINCIPAL ----------
+def pantalla_administrador():
+    global ventana_administrador
+    ventana_administrador = ctk.CTk()
+    ventana_administrador.geometry("500x600")
+    ventana_administrador.title("El ANDEN - Administracion")
+    ventana_administrador.resizable(False, False)
+    ventana_administrador.configure(fg_color="black")
 
-def LeerReservasJSON(ArchivoJSON):
+def botones_administrador():
+    ctk.CTkLabel(ventana_administrador, text="Administrador", text_color="white",
+                 width=150, height=100, font=("Lalezar", 50),
+                 anchor=ctk.W, justify='left').place(x=100, y=5)
+
+    botones = [
+        ("Lugares Restaurante", ver_disponibilidad, 100),
+        ("Ver Canchas", seleccion_deporte, 150),
+        ("Precios Canchas", gestionar_precios_canchas, 200),
+        ("Ver Reservas", lambda: seleccion_tipo_reserva("Ver"), 250),
+        ("Eliminar Reserva", lambda: seleccion_tipo_reserva("Cancelar"), 300),
+        ("Gestionar Menu", gestionar_menu, 350),
+    ]
+    for texto, comando, y in botones:
+        ctk.CTkButton(ventana_administrador, text=texto, command=comando,
+                      border_width=2, border_color="#2FB166", font=("Lalezar", 20),
+                      width=200, height=20, fg_color="black",
+                      corner_radius=50, hover_color="black").place(x=150, y=y)
+
+def administrador():
+    pantalla_administrador()
+    botones_administrador()
+
+# ---------- RESERVAS ----------
+def seleccion_tipo_reserva(destino_reserva):
+    global ventana_seleccion
+    ventana_seleccion = Toplevel(ventana_administrador)
+    ventana_seleccion.title("Tipo de Reserva")
+    ventana_seleccion.geometry("200x300")
+    ventana_seleccion.resizable(False, False)
+    ventana_seleccion.configure(background="black")
+
+    funcion = {"Cancelar": eliminar_reserva, "Ver": ver_reservas}.get(destino_reserva)
+    if not funcion:
+        messagebox.showerror("ERROR", "Acción no válida.")
+        return
+
+    ctk.CTkLabel(ventana_seleccion, text="Tipo de Reserva", text_color="white",
+                 font=("Lalezar", 15)).pack(pady=20)
+
+    for texto in ["Canchas", "Restaurante"]:
+        ctk.CTkButton(ventana_seleccion, text=texto, width=150, height=50,
+                      command=lambda t=texto: funcion(t),
+                      fg_color="#2FB166", text_color="white").pack(pady=20)
+
+def pantalla_reservas():
+    global ventana_reservas
+    ventana_reservas = Toplevel(ventana_administrador)
+    ventana_reservas.title("Reservas")
+    ventana_reservas.geometry("950x650")
+    ventana_reservas.resizable(False, False)
+    ventana_reservas.configure(background="black")
+
+def leer_reservas_json(archivo_json):
     try:
-        with open(ArchivoJSON, "r", encoding="utf-8") as archivo:
+        with open(archivo_json, "r", encoding="utf-8") as archivo:
             data = json.load(archivo)
         return pd.DataFrame(data)
     except FileNotFoundError:
-        messagebox.showerror("ERROR" , f" El archivo {ArchivoJSON} no fue encontrado.")
+        messagebox.showerror("ERROR", f"Archivo {archivo_json} no encontrado.")
         return pd.DataFrame()
     except json.JSONDecodeError:
-        messagebox.showerror("ERROR" , "El archivo no es un JSON válido.")
+        messagebox.showerror("ERROR", "El archivo no es un JSON válido.")
         return pd.DataFrame()
 
-def MostrarDatosReservas(df):
-    for widget in FrameTablaReservas.winfo_children():
+def mostrar_datos_reservas(df):
+    for widget in frame_tabla_reservas.winfo_children():
         widget.destroy()
-
-    tree = ttk.Treeview(FrameTablaReservas, style="Custom.Treeview")
-    tree.pack(fill="both", expand=True, side="left")
-
-    scrollbar = ttk.Scrollbar(FrameTablaReservas, orient="vertical", command=tree.yview)
-    scrollbar.pack(side="right", fill="y")
-    tree.configure(yscrollcommand=scrollbar.set)
-
-    tree["columns"] = list(df.columns)
-    tree["show"] = "headings"
-
-    AnchoColumnass = {
-        "Numero Reserva": 30,
-        "Deporte": 20,
-        "Cancha": 50,
-        "Nombre": 20,
-        "Gmail": 600,
-        "Dia": 20,
-        "Horario": 20,
-        "Precio": 20,
-        "Estado": 30,
-    }
-
-    for col in df.columns:
-        tree.heading(col, text=col)
-        tree.column(col, width=AnchoColumnass.get(col, 100), anchor="center")
-
-    tree.tag_configure("data_row", background="black", foreground="white")
-
-    for index, row in df.iterrows():
+    anchos = {"Numero Reserva": 30, "Deporte": 20, "Cancha": 50, "Nombre": 20,
+              "Gmail": 600, "Dia": 20, "Horario": 20, "Precio": 20, "Estado": 30}
+    tree = _crear_treeview(frame_tabla_reservas, list(df.columns), anchos)
+    for _, row in df.iterrows():
         tree.insert("", "end", values=list(row), tags=("data_row",))
 
-def BuscarReserva():
-    NumeroReserva = BuscarNumero.get()
-    Cancha = BuscarCancha.get()
-    Dia = BuscarDia.get()
-    Deporte = BuscarDeporte.get()
-    Mail = BuscarMail.get()
-    Estado = BuscarEstado.get()
+def buscar_reserva():
+    resultado = hojas_reservas.copy()
+    filtros = [
+        (buscar_numero.get(), 'Numero Reserva', True),
+        (buscar_cancha.get(), 'Cancha', False),
+        (buscar_dia.get(), 'Dia', False),
+        (buscar_deporte.get(), 'Deporte', False),
+        (buscar_mail.get(), 'Mail', False),
+        (buscar_estado.get(), 'Estado', False),
+    ]
+    for valor, col, exacto in filtros:
+        if valor and col in resultado.columns:
+            resultado = (resultado[resultado[col].astype(str) == valor] if exacto
+                         else resultado[resultado[col].str.contains(valor, case=False)])
+    mostrar_datos_reservas(resultado)
 
-    resultado = HojasReservas
-    if NumeroReserva:
-        resultado = resultado[resultado['Numero Reserva'].astype(str) == NumeroReserva]
-    if Cancha:
-        resultado = resultado[resultado['Cancha'].str.contains(Cancha, case=False)]
-    if Dia:
-        resultado = resultado[resultado['Dia'].str.contains(Dia, case=False)]
-    if Deporte:
-        resultado = resultado[resultado['Deporte'].str.contains(Deporte, case=False)]
-    if Mail:
-        resultado = resultado[resultado['Mail'].str.contains(Mail, case=False)]
-    if Estado:
-        resultado = resultado[resultado['Estado'].str.contains(Estado, case=False)]
-    
-    MostrarDatosReservas(resultado)
+def ver_reservas(tipo_reserva_seleccionado):
+    global hojas_reservas, frame_busqueda_reservas, frame_tabla_reservas
+    global buscar_numero, buscar_deporte, buscar_dia, buscar_cancha, buscar_mail, buscar_estado
 
-def VerReservas(TipoReservaSeleccionado):
-    global HojasReservas, FrameBusquedaReservas, FrameTablaReservas
-    if TipoReservaSeleccionado is None:
-        messagebox.showerror("ERROR", "Debe seleccionar un tipo de reserva.")
-        return
-    ventanaSeleccion.destroy()
-    if TipoReservaSeleccionado == "Canchas":
-        NombreArchivoReservas = "src/JSON/Reservas.json"
-    elif TipoReservaSeleccionado == "Restaurante":
-        NombreArchivoReservas = "src/JSON/ReservasRestaurante.json"
-    PantallaReservas()
-    TablaReservas()
-    FramesReservas()
-    HojasReservas = LeerReservasJSON(NombreArchivoReservas)
+    ventana_seleccion.destroy()
+    archivo = ("src/JSON/Reservas.json" if tipo_reserva_seleccionado == "Canchas"
+               else "src/JSON/ReservasRestaurante.json")
 
-    if not HojasReservas.empty:
-        MostrarDatosReservas(HojasReservas)
+    pantalla_reservas()
+
+    frame_tabla_reservas = ctk.CTkFrame(ventana_reservas, fg_color="black")
+    frame_tabla_reservas.pack(fill="both", expand=True)
+    frame_busqueda_reservas = ctk.CTkFrame(ventana_reservas, fg_color="black", bg_color="black")
+    frame_busqueda_reservas.pack(pady=10, fill="x", side="bottom")
+
+    hojas_reservas = leer_reservas_json(archivo)
+    if not hojas_reservas.empty:
+        mostrar_datos_reservas(hojas_reservas)
     else:
-        messagebox.showerror("ERROR" , "No hay datos disponibles.")
+        messagebox.showerror("ERROR", "No hay datos disponibles.")
 
-    global BuscarDeporte, BuscarCancha, BuscarDia, BuscarNumero, BuscarMail, BuscarEstado
-    BuscarNumero = ctk.CTkEntry(
-        FrameBusquedaReservas, 
-        width=125,
-        height=30,  
-        placeholder_text="Número de Reserva",
-        placeholder_text_color="white",
-        text_color="white",
-        border_width=2,
-        border_color="#2FB166",
-        fg_color="#2FB166"
-    )
-    BuscarNumero.pack(side="left", padx=10)
+    campos = [("Número de Reserva", "buscar_numero"), ("Deporte", "buscar_deporte"),
+              ("Dia", "buscar_dia"), ("Cancha", "buscar_cancha"),
+              ("Mail", "buscar_mail"), ("Estado", "buscar_estado")]
 
-    BuscarDeporte = ctk.CTkEntry(
-        FrameBusquedaReservas, 
-        width=125, 
-        height=30,
-        placeholder_text="Deporte", 
-        placeholder_text_color="white", 
-        text_color="white", 
-        border_width=2, 
-        border_color="#2FB166", 
-        fg_color="#2FB166"
-    )
-    BuscarDeporte.pack(side="left", padx=10)
+    entries = {}
+    for placeholder, key in campos:
+        e = ctk.CTkEntry(frame_busqueda_reservas, width=125, height=30,
+                         placeholder_text=placeholder, placeholder_text_color="white",
+                         text_color="white", border_width=2,
+                         border_color="#2FB166", fg_color="#2FB166")
+        e.pack(side="left", padx=10)
+        entries[key] = e
 
-    BuscarDia = ctk.CTkEntry(
-        FrameBusquedaReservas, 
-        width=125,
-        height=30, 
-        placeholder_text="Dia",
-        placeholder_text_color="white",
-        text_color="white",
-        border_width=2,
-        border_color="#2FB166",
-        fg_color="#2FB166"
-    )
-    BuscarDia.pack(side="left", padx=10)
+    buscar_numero = entries["buscar_numero"]
+    buscar_deporte = entries["buscar_deporte"]
+    buscar_dia = entries["buscar_dia"]
+    buscar_cancha = entries["buscar_cancha"]
+    buscar_mail = entries["buscar_mail"]
+    buscar_estado = entries["buscar_estado"]
 
-    BuscarCancha = ctk.CTkEntry(
-        FrameBusquedaReservas, 
-        width=125,
-        height=30, 
-        placeholder_text="Cancha",
-        placeholder_text_color="white",
-        text_color="white",
-        border_width=2,
-        border_color="#2FB166",
-        fg_color="#2FB166"
-    )
-    BuscarCancha.pack(side="left", padx=10)
+    if archivo == "src/JSON/ReservasRestaurante.json":
+        entries["buscar_cancha"].pack_forget()
+        entries["buscar_deporte"].pack_forget()
+        entries["buscar_estado"].pack_forget()
 
-    BuscarMail = ctk.CTkEntry(
-        FrameBusquedaReservas, 
-        width=125,
-        height=30, 
-        placeholder_text="Mail",
-        placeholder_text_color="white",
-        text_color="white",
-        border_width=2,
-        border_color="#2FB166",
-        fg_color="#2FB166"
-    )
-    BuscarMail.pack(side="left", padx=10)
+    ctk.CTkButton(frame_busqueda_reservas, text="Buscar", width=175, height=30,
+                  command=buscar_reserva, fg_color="#2FB166",
+                  text_color="white").pack(side="left", padx=10)
+    ventana_reservas.mainloop()
 
-    BuscarEstado = ctk.CTkEntry(
-        FrameBusquedaReservas, 
-        width=125,
-        height=30, 
-        placeholder_text="Estado",
-        placeholder_text_color="white",
-        text_color="white",
-        border_width=2,
-        border_color="#2FB166",
-        fg_color="#2FB166"
-    )
-    BuscarEstado.pack(side="left", padx=10)
+def _ventana_texto_input(placeholder):
+    resultado = {"valor": None}
+    ventana = Toplevel(ventana_administrador)
+    ventana.geometry("400x150")
+    ventana.title("Texto")
+    ventana.resizable(False, False)
+    ventana.configure(background="black")
 
-    if NombreArchivoReservas == "src/JSON/ReservasRestaurante.json":
-        BuscarCancha.pack_forget()
-        BuscarDeporte.pack_forget()
-        BuscarEstado.pack_forget()
+    entrada = ctk.CTkEntry(ventana, width=300, height=50, font=("Lalezar", 20),
+                           placeholder_text=placeholder, fg_color="white",
+                           corner_radius=10, border_color="white", text_color="Black")
+    entrada.place(x=50, y=25)
 
-    BotonBuscar = ctk.CTkButton(
-        FrameBusquedaReservas, 
-        text="Buscar", 
-        width=175,
-        height=30,  
-        command=BuscarReserva, 
-        fg_color="#2FB166", 
-        text_color="white"
-    )
-    BotonBuscar.pack(side="left", padx=10)
-    ventanaReservas.mainloop()
+    def confirmar():
+        resultado["valor"] = entrada.get()
+        ventana.destroy()
 
-def VentanaTexto():
-    global PestañaTexto, EntradaTexto, TextoIngresado
-    TextoIngresado = None
-    PestañaTexto = Toplevel(ventanaAdministrador)
-    PestañaTexto.geometry("400x150")
-    PestañaTexto.title("Texto")
-    PestañaTexto.resizable(False, False)
-    PestañaTexto.configure(background="black")
-    
-    EntradaTexto = ctk.CTkEntry(
-        PestañaTexto,
-        width=300,
-        height=50,
-        font=("Lalezar", 20),
-        placeholder_text=f"Ingrese el Numero de Reserva",
-        fg_color="white",
-        corner_radius=10,
-        border_color="white",
-        text_color="Black"
-    )
-    EntradaTexto.place(x=50, y=25)
+    ctk.CTkButton(ventana, command=confirmar, text="Confirmar", width=100, height=25,
+                  fg_color="#2FB166", font=("Lalezar", 15), corner_radius=10,
+                  hover_color="#2FB166").place(x=150, y=100)
+    ventana.wait_window()
+    return resultado["valor"]
 
-    def confirmar_y_cerrar():
-        global TextoIngresado
-        TextoIngresado = EntradaTexto.get()
-        PestañaTexto.destroy()
-    
-    BotonConfirmar = ctk.CTkButton(
-        PestañaTexto, 
-        command=confirmar_y_cerrar,
-        text="Confirmar",
-        width=100,
-        height=25,
-        fg_color="#2FB166",
-        font=("Lalezar", 15),
-        corner_radius=10,
-        hover_color="#2FB166"
-    )
-    BotonConfirmar.place(x=150, y=100)
-    
-    PestañaTexto.wait_window()
-
-def ObtenerMailUsuario():
-    global MailUsuario
-    with open(NombreArchivoReservas, 'r') as file:
-        Reservas = json.load(file)
-    for reserva in Reservas:
-        for Clave , Valor in reserva.items():
-            if Clave == "Numero Reserva":
-                if Valor == NumeroIngresado:
-                    for Clave , Valor in reserva.items():
-                        if Clave == "Mail":
-                            MailUsuario = Valor
-
-def EliminarReserva(TipoReservaSeleccionado):
-    global NumeroIngresado , NombreArchivoReservas
-    if TipoReservaSeleccionado is None:
-        messagebox.showerror("ERROR", "Debe seleccionar un tipo de reserva.")
-        return
-    ventanaSeleccion.destroy()
-    if TipoReservaSeleccionado == "Canchas":
-        NombreArchivoReservas = "src/JSON/Reservas.json"
-    elif TipoReservaSeleccionado == "Restaurante":
-        NombreArchivoReservas = "src/JSON/ReservasRestaurante.json"    
-    
-    VentanaTexto()
-
-    if TextoIngresado is not None:
-        NumeroIngresado = TextoIngresado
-        ObtenerMailUsuario()
-        ReestablecerDatosReserva(NumeroIngresado)
-        mensaje = (f"Su reserva de numero {NumeroIngresado} a sido eliminada por El Admin")
-        EnviarMail(MailUsuario , mensaje , "Reserva Eliminada")
-        messagebox.showinfo("Exito" , "Reserva eliminada exitosamente")
-    else:
-        messagebox.showerror("ERROR" , "Número de reserva no encontrado")
-            
-def ReestablecerDatosReserva(NumeroIngresado):
-    global ArchivoJSON
+def obtener_mail_usuario(numero_ingresado, archivo):
     try:
-        with open(NombreArchivoReservas, 'r') as file:
-            ArchivoReservas = json.load(file)
+        with open(archivo, 'r') as f:
+            reservas = json.load(f)
+        for r in reservas:
+            if r.get("Numero Reserva") == numero_ingresado:
+                return r.get("Mail", "")
+    except Exception:
+        pass
+    return ""
 
-        if NombreArchivoReservas == "src/JSON/Reservas.json":
-            for reserva in ArchivoReservas:
-                if reserva['Numero Reserva'] == str(NumeroIngresado):
-                    DeporteReserva = reserva['Deporte']
-                    DiaReserva = reserva['Dia']
-                    HorarioReserva = reserva['Horario']
-                    CanchaReserva = reserva['Cancha']
-                    ArchivoDeporte = DeporteReserva + ".json"
-                    with open(ArchivoDeporte, 'r') as file:
-                        Archivo = json.load(file)
+def eliminar_reserva(tipo_reserva_seleccionado):
+    global nombre_archivo_reservas
+    ventana_seleccion.destroy()
+    nombre_archivo_reservas = ("src/JSON/Reservas.json" if tipo_reserva_seleccionado == "Canchas"
+                               else "src/JSON/ReservasRestaurante.json")
 
-                    for Datos in Archivo:
-                        for Cancha, Dias in Datos.items():
-                            if Cancha == CanchaReserva:
-                                for Dia, Horarios in Dias.items():
-                                    if Dia == DiaReserva:
-                                        for Horario, Estado in Horarios.items():
-                                            if Horario == HorarioReserva and Estado == "Reservada":
-                                                Horarios[Horario] = "Disponible"
-                                                messagebox.showinfo("Exito" , f"El estado de la {CanchaReserva} de {DeporteReserva}, el dia {DiaReserva} a las {HorarioReserva} ha sido cambiado a 'Disponible'")
-                    with open(ArchivoDeporte, 'w') as file:
-                        json.dump(Archivo, file, indent=4)
-        if NombreArchivoReservas == "ReservasRestaurante.json":
-             for reserva in ArchivoReservas:
-                if reserva['Numero Reserva'] == str(NumeroIngresado):
-                    DiaReserva = reserva['Dia']
-                    CantidadComensales = reserva['Numero de comensales']
-                    ArchivoJSON = 'src/JSON/Restaurante.json'
-                    DiasData = CargarDatosJSON()[0]
-                    DiasData[DiaReserva]["Lugares Disponibles"] += CantidadComensales
-                    DiasData[DiaReserva]["Lugares Ocupados"] -= CantidadComensales
-                    GuardarDatosJSON([DiasData])
-        ArchivoReservas = [reserva for reserva in ArchivoReservas if reserva['Numero Reserva'] != NumeroIngresado]
-        with open(NombreArchivoReservas, 'w') as f:
-            json.dump(ArchivoReservas, f, indent=4)
+    numero_ingresado = _ventana_texto_input("Ingrese el Numero de Reserva")
+    if not numero_ingresado:
+        messagebox.showerror("ERROR", "No se ingresó número de reserva.")
+        return
 
+    mail_usuario = obtener_mail_usuario(numero_ingresado, nombre_archivo_reservas)
+    restablecer_datos_reserva(numero_ingresado)
+    enviar_mail(mail_usuario,
+                f"Tu reserva número {numero_ingresado} fue eliminada por el administrador.",
+                "Reserva Eliminada")
+    messagebox.showinfo("Éxito", "Reserva eliminada exitosamente.")
+
+def restablecer_datos_reserva(numero_ingresado):
+    try:
+        with open(nombre_archivo_reservas, 'r') as f:
+            archivo_reservas = json.load(f)
+
+        if nombre_archivo_reservas == "src/JSON/Reservas.json":
+            for reserva in archivo_reservas:
+                if reserva['Numero Reserva'] == str(numero_ingresado):
+                    deporte = reserva['Deporte']
+                    dia = reserva['Dia']
+                    horario = reserva['Horario']
+                    cancha = reserva['Cancha']
+                    archivo_deporte = f"src/JSON/{deporte}.json"
+                    with open(archivo_deporte, 'r') as f:
+                        datos = json.load(f)
+                    for item in datos:
+                        for nombre_cancha, dias in item.items():
+                            if nombre_cancha == cancha and dia in dias and horario in dias[dia]:
+                                if dias[dia][horario] == "Reservada":
+                                    dias[dia][horario] = "Disponible"
+                    with open(archivo_deporte, 'w') as f:
+                        json.dump(datos, f, indent=4)
+
+        elif nombre_archivo_reservas == "src/JSON/ReservasRestaurante.json":
+            for reserva in archivo_reservas:
+                if reserva['Numero Reserva'] == str(numero_ingresado):
+                    dia = reserva['Dia']
+                    cantidad = reserva['Numero de comensales']
+                    datos_rest = cargar_datos_restaurante()[0]
+                    datos_rest[dia]["Lugares Disponibles"] += cantidad
+                    datos_rest[dia]["Lugares Ocupados"] -= cantidad
+                    guardar_datos_restaurante([datos_rest])
+
+        archivo_reservas = [r for r in archivo_reservas
+                            if r['Numero Reserva'] != str(numero_ingresado)]
+        with open(nombre_archivo_reservas, 'w') as f:
+            json.dump(archivo_reservas, f, indent=4)
 
     except FileNotFoundError:
-        messagebox.showerror("ERROR" ,"El archivo no se encontró. Verifica la ruta del archivo.")
+        messagebox.showerror("ERROR", "Archivo no encontrado.")
     except json.JSONDecodeError:
-        messagebox.showerror("ERROR" ,"Error al decodificar el archivo JSON. Asegúrate de que el formato sea correcto.")
-    except KeyError as e:
-        messagebox.showerror("ERROR" ,f"Error de clave: {e}. Asegúrate de que la clave existe en el archivo JSON.")
+        messagebox.showerror("ERROR", "Error al leer el JSON.")
     except Exception as e:
-        messagebox.showerror("ERROR" ,f"Ocurrió un error inesperado: {e}")
+        messagebox.showerror("ERROR", f"Error inesperado: {e}")
 
-def PantallaCanchas(Deporte):
-    global ventanaCanchas
-    ventanaCanchas = Toplevel(ventanaAdministrador)
-    ventanaCanchas.title(f"Canchas {Deporte}")
-    ventanaCanchas.geometry("950x650")
-    ventanaCanchas.resizable(False, False)
-    ventanaCanchas.attributes("-fullscreen", False)
-    ventanaCanchas.configure(background="black")
+# ---------- CANCHAS ----------
+def seleccion_deporte():
+    global ventana_seleccion
+    ventana_seleccion = Toplevel(ventana_administrador)
+    ventana_seleccion.title("Seleccionar Deporte")
+    ventana_seleccion.geometry("400x300")
+    ventana_seleccion.resizable(False, False)
+    ventana_seleccion.configure(background="black")
 
-def LeerCanchasJSON(ArchivoJSON):
-    try:
-        with open(ArchivoJSON, "r", encoding="utf-8") as archivo:
-            data = json.load(archivo)
-        return data
-    except FileNotFoundError:
-        messagebox.showerror("ERROR" , f" El archivo {ArchivoJSON} no fue encontrado.")
-        return {}
-    except json.JSONDecodeError:
-        messagebox.showerror("ERROR" , "El archivo no es un JSON válido.")
-        return {}
+    for deporte in ["Futbol", "Tenis", "Padel"]:
+        ctk.CTkButton(ventana_seleccion, text=deporte, width=150, height=50,
+                      command=lambda d=deporte: ver_canchas(d),
+                      fg_color="#2FB166", text_color="white").pack(pady=20)
+    ventana_seleccion.mainloop()
 
-def ProcesarCanchas(data):
+def ver_canchas(deporte):
+    global hojas_canchas, frame_tabla_canchas, frame_busqueda_canchas
+    global buscar_cancha, buscar_dia, buscar_estado, buscar_horario
+
+    ventana_seleccion.destroy()
+
+    ventana_canchas = Toplevel(ventana_administrador)
+    ventana_canchas.title(f"Canchas {deporte}")
+    ventana_canchas.geometry("950x650")
+    ventana_canchas.resizable(False, False)
+    ventana_canchas.configure(background="black")
+
+    frame_tabla_canchas = ctk.CTkFrame(ventana_canchas, fg_color="black")
+    frame_tabla_canchas.pack(fill="both", expand=True)
+    frame_busqueda_canchas = ctk.CTkFrame(ventana_canchas, fg_color="black", bg_color="black")
+    frame_busqueda_canchas.pack(pady=10, fill="x", side="bottom")
+
+    archivo = f"src/JSON/{deporte}.json"
+    data = cargar_archivo(archivo)
+    if data:
+        hojas_canchas = procesar_canchas(data)
+        mostrar_datos_canchas(hojas_canchas)
+    else:
+        messagebox.showerror("ERROR", "No hay datos disponibles.")
+
+    campos = [("Dia", "buscar_dia"), ("Cancha", "buscar_cancha"),
+              ("Horario", "buscar_horario"), ("Estado", "buscar_estado")]
+    entries = {}
+    for placeholder, key in campos:
+        e = ctk.CTkEntry(frame_busqueda_canchas, width=125, height=30,
+                         placeholder_text=placeholder, placeholder_text_color="white",
+                         text_color="white", border_width=2,
+                         border_color="#2FB166", fg_color="#2FB166")
+        e.pack(side="left", padx=10)
+        entries[key] = e
+
+    buscar_dia = entries["buscar_dia"]
+    buscar_cancha = entries["buscar_cancha"]
+    buscar_horario = entries["buscar_horario"]
+    buscar_estado = entries["buscar_estado"]
+
+    ctk.CTkButton(frame_busqueda_canchas, text="Buscar", width=175, height=30,
+                  command=filtrar_canchas, fg_color="#2FB166",
+                  text_color="white").pack(side="left", padx=10)
+    ventana_canchas.mainloop()
+
+def procesar_canchas(data):
     filas = []
-
     for info in data:
         for cancha, dias in info.items():
             for dia, horarios in dias.items():
                 for hora, estado in horarios.items():
-                    fila = {
-                        "Cancha": cancha,
-                        "Dia": dia,
-                        "Horario": hora,
-                        "Estado": estado
-                    }
-                    filas.append(fila)
-
+                    filas.append({"Cancha": cancha, "Dia": dia, "Horario": hora, "Estado": estado})
     return pd.DataFrame(filas)
 
-def TablaCanchas():
-    global FrameTablaCanchas
-    style = ttk.Style()
-    style.theme_use("clam")
-    style.configure("Custom.Treeview.Heading", background="#2FB166", foreground="black")
-    style.configure(
-        "Custom.Treeview", 
-        background="black",
-        foreground="white",
-        fieldbackground="black",
-        highlightthickness=0,
-        highlightbackground="black", 
-        bd=1,
-        relief="solid"
-    )
-    style.map("Custom.Treeview", background=[("selected", "#2FB166")])
-
-    FrameTablaCanchas = ctk.CTkFrame(ventanaCanchas, fg_color="black")
-    FrameTablaCanchas.pack(fill="both", expand=True)
-
-    tree = ttk.Treeview(FrameTablaCanchas, style="Custom.Treeview")
-    tree.pack(fill="both", expand=True, side="left")
-
-    scrollbar = ttk.Scrollbar(FrameTablaCanchas, orient="vertical", command=tree.yview)
-    scrollbar.pack(side="right", fill="y")
-    tree.configure(yscrollcommand=scrollbar.set)
-
-def FramesCanchas():
-    global FrameBusquedaCanchas
-    FrameBusquedaCanchas = ctk.CTkFrame(ventanaCanchas, fg_color="black", bg_color="black")
-    FrameBusquedaCanchas.pack(pady=10, fill="x", side="bottom")
-
-def MostrarDatosCanchas(df):
-    # Limpiar la tabla actual
-    for widget in FrameTablaCanchas.winfo_children():
+def mostrar_datos_canchas(df):
+    for widget in frame_tabla_canchas.winfo_children():
         widget.destroy()
-
-    tree = ttk.Treeview(FrameTablaCanchas, style="Custom.Treeview")
-    tree.pack(fill="both", expand=True, side="left")
-
-    scrollbar = ttk.Scrollbar(FrameTablaCanchas, orient="vertical", command=tree.yview)
-    scrollbar.pack(side="right", fill="y")
-    tree.configure(yscrollcommand=scrollbar.set)
-
-    tree["columns"] = ["Cancha", "Dia", "Horario", "Estado"]
-    tree["show"] = "headings"
-
-    AnchoColumnas = {
-        "Cancha": 30,
-        "Dia": 20,
-        "Horario": 50,
-        "Estado": 20,
-    }
-
-    for col in df.columns:
-        tree.heading(col, text=col)
-        tree.column(col, width=AnchoColumnas.get(col, 100), anchor="center")
-
-    tree.tag_configure("data_row", background="black", foreground="white")
-
-    for index, row in df.iterrows():
+    anchos = {"Cancha": 30, "Dia": 20, "Horario": 50, "Estado": 20}
+    tree = _crear_treeview(frame_tabla_canchas, ["Cancha", "Dia", "Horario", "Estado"], anchos)
+    for _, row in df.iterrows():
         tree.insert("", "end", values=list(row), tags=("data_row",))
 
-def FiltrarCanchas():
-    Cancha = BuscarCancha.get()
-    Dia = BuscarDia.get()
-    Estado = BuscarEstado.get()
-    Horario = BuscarHorario.get()
+def filtrar_canchas():
+    resultado = hojas_canchas.copy()
+    for valor, col in [(buscar_cancha.get(), 'Cancha'), (buscar_dia.get(), 'Dia'),
+                       (buscar_estado.get(), 'Estado'), (buscar_horario.get(), 'Horario')]:
+        if valor:
+            resultado = resultado[resultado[col].str.contains(valor, case=False)]
+    mostrar_datos_canchas(resultado)
 
-    resultado = HojasCanchas
-    if Cancha:
-        resultado = resultado[resultado['Cancha'].str.contains(Cancha, case=False)]
-    if Dia:
-        resultado = resultado[resultado['Dia'].str.contains(Dia, case=False)]
-    if Estado:
-        resultado = resultado[resultado['Estado'].str.contains(Estado, case=False)]
-    if Horario:
-        resultado = resultado[resultado['Horario'].str.contains(Horario, case=False)]
-        
-    MostrarDatosCanchas(resultado)
+# ---------- PRECIOS ----------
+def gestionar_precios_canchas():
+    global frame_tabla_precios
+    ventana_precios = Toplevel(ventana_administrador)
+    ventana_precios.title("Precios")
+    ventana_precios.geometry("500x500")
+    ventana_precios.resizable(False, False)
+    ventana_precios.configure(background="black")
 
-def VerCanchas(Deporte):
-    global HojasCanchas, FrameBusquedaCanchas, FrameTablaCanchas
-    ventanaSeleccion.destroy()
-    PantallaCanchas(Deporte)
-    TablaCanchas()
-    FramesCanchas()
-    ArchivoJSON = "src/JSON/" + Deporte + ".json"
-    data = LeerCanchasJSON(ArchivoJSON)
+    frame_tabla_precios = ctk.CTkFrame(ventana_precios, fg_color="black")
+    frame_tabla_precios.pack(fill="both", expand=True)
 
-    if data:
-        HojasCanchas = ProcesarCanchas(data)
-        MostrarDatosCanchas(HojasCanchas)
-    else:
-        messagebox.showerror("ERROR" , "No hay datos disponibles.")
+    frame_texto = ctk.CTkFrame(ventana_precios, fg_color="black", bg_color="black")
+    frame_texto.pack(fill="x", side="bottom", pady=10)
 
-    global BuscarCancha, BuscarDia, BuscarEstado , BuscarHorario
-    BuscarDia = ctk.CTkEntry(
-        FrameBusquedaCanchas, 
-        width=125,
-        height=30, 
-        placeholder_text="Dia",
-        placeholder_text_color="white",
-        text_color="white",
-        border_width=2,
-        border_color="#2FB166",
-        fg_color="#2FB166"
-    )
-    BuscarDia.pack(side="left", padx=10)
-
-    BuscarCancha = ctk.CTkEntry(
-        FrameBusquedaCanchas, 
-        width=125,
-        height=30, 
-        placeholder_text="Cancha",
-        placeholder_text_color="white",
-        text_color="white",
-        border_width=2,
-        border_color="#2FB166",
-        fg_color="#2FB166"
-    )
-    BuscarCancha.pack(side="left", padx=10)
-
-    BuscarHorario = ctk.CTkEntry(
-        FrameBusquedaCanchas, 
-        width=125,
-        height=30, 
-        placeholder_text="Horario",
-        placeholder_text_color="white",
-        text_color="white",
-        border_width=2,
-        border_color="#2FB166",
-        fg_color="#2FB166"
-    )
-    BuscarHorario.pack(side="left", padx=10)
-
-
-    BuscarEstado = ctk.CTkEntry(
-        FrameBusquedaCanchas, 
-        width=125,
-        height=30, 
-        placeholder_text="Estado",
-        placeholder_text_color="white",
-        text_color="white",
-        border_width=2,
-        border_color="#2FB166",
-        fg_color="#2FB166"
-    )
-    BuscarEstado.pack(side="left", padx=10)
-
-    BotonBuscar = ctk.CTkButton(
-        FrameBusquedaCanchas, 
-        text="Buscar", 
-        width=175,
-        height=30,  
-        command=FiltrarCanchas, 
-        fg_color="#2FB166", 
-        text_color="white"
-    )
-    BotonBuscar.pack(side="left", padx=10)
-    ventanaCanchas.mainloop()
-    
-def SeleccionDeporte():
-    global ventanaSeleccion
-    ventanaSeleccion = Toplevel(ventanaAdministrador)
-    ventanaSeleccion.title("Seleccionar Deporte")
-    ventanaSeleccion.geometry("400x300")
-    ventanaSeleccion.resizable(False, False)
-    ventanaSeleccion.configure(background="black")
-
-    BotonFutbol = ctk.CTkButton(
-        ventanaSeleccion, 
-        text="Futbol", 
-        width=150, 
-        height=50,  
-        command=lambda: VerCanchas("Futbol"), 
-        fg_color="#2FB166", 
-        text_color="white"
-    )
-    BotonFutbol.pack(pady=20)
-
-    BotonTenis = ctk.CTkButton(
-        ventanaSeleccion, 
-        text="Tenis", 
-        width=150, 
-        height=50,  
-        command=lambda: VerCanchas("Tenis"), 
-        fg_color="#2FB166", 
-        text_color="white"
-    )
-    BotonTenis.pack(pady=20)
-
-    BotonPadel = ctk.CTkButton(
-        ventanaSeleccion, 
-        text="Padel", 
-        width=150, 
-        height=50,  
-        command=lambda: VerCanchas("Padel"), 
-        fg_color="#2FB166", 
-        text_color="white"
-    )
-    BotonPadel.pack(pady=20)
-    ventanaSeleccion.mainloop()
-
-def LeerPreciosJSON(ArchivoJSON):
     try:
-        with open(ArchivoJSON, "r", encoding="utf-8") as archivo:
-            data = json.load(archivo)
-        return data[0] 
-    except FileNotFoundError:
-        messagebox.showerror("ERROR" , f" El archivo {ArchivoJSON} no fue encontrado.")
-        return {}
-    except json.JSONDecodeError:
-        messagebox.showerror("ERROR" , "El archivo no es un JSON válido.")
-        return {}
+        with open("src/JSON/Precios.json", "r", encoding="utf-8") as f:
+            data = json.load(f)[0]
+    except Exception:
+        messagebox.showerror("ERROR", "No se pudieron cargar los precios.")
+        return
 
-def MostrarTablaDePrecios(data):
-    global FrameTablaPrecios
-    style = ttk.Style()
-    style.theme_use("clam")
-    style.configure("Custom.Treeview.Heading", background="#2FB166", foreground="black")
-    style.configure(
-        "Custom.Treeview", 
-        background="black",
-        foreground="white",
-        fieldbackground="black",
-        highlightthickness=0,
-        highlightbackground="black", 
-        bd=1,
-        relief="solid"
-    )
-    style.map("Custom.Treeview", background=[("selected", "#2FB166")])
+    mostrar_tabla_precios(data)
 
-    for widget in FrameTablaPrecios.winfo_children():
+    ctk.CTkLabel(frame_texto, text="Doble clic para modificar el precio",
+                 text_color="white", font=("Lalezar", 20), anchor="center").pack()
+    ventana_precios.mainloop()
+
+def mostrar_tabla_precios(data):
+    for widget in frame_tabla_precios.winfo_children():
         widget.destroy()
 
-    tree = ttk.Treeview(FrameTablaPrecios, style="Custom.Treeview")
-    tree.pack(fill="both", expand=True, side="left")
+    anchos = {"Deporte": 100, "Dia": 100, "Noche": 100}
+    tree = _crear_treeview(frame_tabla_precios, ["Deporte", "Dia", "Noche"], anchos)
 
-    tree["columns"] = ["Deporte", "Dia", "Noche"]
-    tree["show"] = "headings"
+    for deporte, precios in data.items():
+        tree.insert("", "end", values=(deporte, precios["Dia"], precios["Noche"]))
 
-    AnchoColumnass = {
-        "Deporte": 100,
-        "Dia": 100,
-        "Noche": 100,
-    }
+    tree.bind("<Double-1>", lambda e: editar_precio(e, tree, data))
 
-    for col in tree["columns"]:
-        tree.heading(col, text=col)
-        tree.column(col, width=AnchoColumnass.get(col, 100), anchor="center")
-
-    for cancha, precios in data.items():
-        tree.insert("", "end", values=(cancha, precios["Dia"], precios["Noche"]))
-
-    tree.bind("<Double-1>", lambda event, tree=tree, data=data: EditarPrecio(event, tree, data))
-
-def EditarPrecio(event, tree, data):
-    item = tree.selection()[0]
-    col = tree.identify_column(event.x)
-    col = col.split("#")[-1]
-    col = int(col) - 1
-
+def editar_precio(event, tree, data):
+    item = tree.selection()
+    if not item:
+        return
+    item = item[0]
+    col = int(tree.identify_column(event.x).split("#")[-1]) - 1
     if col > 0:
-        PrecioActual = tree.item(item, "values")[col]
-        cancha = tree.item(item, "values")[0]
+        deporte = tree.item(item, "values")[0]
+        actual = tree.item(item, "values")[col]
+        nuevo = simpledialog.askstring("Editar Precio",
+                                       f"Nuevo precio para {deporte} ({'Día' if col == 1 else 'Noche'}):",
+                                       initialvalue=actual)
+        if nuevo:
+            vals = list(tree.item(item, "values"))
+            vals[col] = nuevo
+            tree.item(item, values=vals)
+            campo = "Dia" if col == 1 else "Noche"
+            data[deporte][campo] = int(nuevo)
+            with open("src/JSON/Precios.json", "w", encoding="utf-8") as f:
+                json.dump([data], f, ensure_ascii=False, indent=4)
 
-        PrecioNuevo = simpledialog.askstring("Editar Precio", f"Nuevo precio para {cancha} ({'Día' if col == 1 else 'Noche'}):", initialvalue=PrecioActual)
+# ---------- MENÚ ----------
+def gestionar_menu():
+    global frame_tabla_menu
 
-        if PrecioNuevo:
-            tree.item(item, values=(cancha, PrecioNuevo if col == 1 else tree.item(item, "values")[1], PrecioNuevo if col == 2 else tree.item(item, "values")[2]))
-            
-            
-            if col == 1:
-                data[cancha]["Dia"] = int(PrecioNuevo)
-            else:
-                data[cancha]["Noche"] = int(PrecioNuevo)
+    ventana_menu = Toplevel(ventana_administrador)
+    ventana_menu.title("Menú de Precios")
+    ventana_menu.geometry("800x600")
+    ventana_menu.resizable(False, False)
+    ventana_menu.configure(background="black")
 
-            with open("src/JSON/precios.json", "w", encoding="utf-8") as archivo:
-                json.dump([data], archivo, ensure_ascii=False, indent=4)
+    frame_tabla_menu = ctk.CTkFrame(ventana_menu, fg_color="black")
+    frame_tabla_menu.pack(fill="both", expand=True)
 
-def PantallaPrecios():
-    global ventanaPrecios, FrameTablaPrecios , FrameTextoPrecios
-    ventanaPrecios = Toplevel(ventanaAdministrador)
-    ventanaPrecios.title("Precios")
-    ventanaPrecios.geometry("500x500")
-    ventanaPrecios.resizable(False, False)
-    ventanaPrecios.configure(background="black")
+    frame_busqueda = ctk.CTkFrame(ventana_menu, fg_color="black", bg_color="black")
+    frame_busqueda.pack(pady=10, fill="x", side="bottom")
 
-    FrameTablaPrecios = ctk.CTkFrame(ventanaPrecios, fg_color="black")
-    FrameTablaPrecios.pack(fill="both", expand=True)
-    
-    tree = ttk.Treeview(FrameTablaPrecios, style="Custom.Treeview")
-    tree.pack(fill="both", expand=True, side="left")
-    
-    scrollbar = ttk.Scrollbar(FrameTablaPrecios, orient="vertical", command=tree.yview)
-    scrollbar.pack(side="right", fill="y")
-    tree.configure(yscrollcommand=scrollbar.set)
-    
-    FrameTextoPrecios = ctk.CTkFrame(ventanaPrecios, fg_color="black" , bg_color="black")
-    FrameTextoPrecios.pack(fill="x", side="bottom", pady=10)
-
-def GestionarPreciosCanchas():
-    PantallaPrecios()
-    data = LeerPreciosJSON("precios.json")
-    if data:
-        MostrarTablaDePrecios(data)
-    else:
-        messagebox.showerror("ERROR" , "No hay datos de precios disponibles.")
-
-    texto = ctk.CTkLabel(
-        FrameTextoPrecios,
-        text="Doble clic para modificar el precio de las canchas",
-        text_color="white",
-        width=100,
-        height=20,
-        font=("Lalezar", 20),
-        anchor="center",
-        justify='center'
-    )
-    texto.pack()
-
-    ventanaPrecios.mainloop()
-
-def LeerMenuJSON(ArchivoJSON):
     try:
-        with open(ArchivoJSON, "r", encoding="utf-8") as archivo:
-            data = json.load(archivo)
-        return data[0]
-    except FileNotFoundError:
-        messagebox.showerror("ERROR" , f"El archivo {ArchivoJSON} no fue encontrado.")
-        return {}
-    except json.JSONDecodeError:
-        messagebox.showerror("ERROR" , "El archivo no es un JSON válido.")
-        return {}
+        with open("src/JSON/Menu.json", "r", encoding="utf-8") as f:
+            menu_data = json.load(f)[0]
+    except Exception:
+        messagebox.showerror("ERROR", "No se pudo cargar el menú.")
+        return
 
-def GuardarMenuJSON(data, ArchivoJSON="menu.json"):
-    try:
-        with open(ArchivoJSON, "w", encoding="utf-8") as archivo:
-            json.dump([data], archivo, ensure_ascii=False, indent=4)
-    except Exception as e:
-        messagebox.showerror("ERROR" , f"Error al guardar el archivo JSON: {e}")
+    mostrar_tabla_menu(menu_data)
 
-def MostrarTablaDeMenu(data, tipo="Todos"):
-    global FrameTablaMenu, tree
-    
-    for widget in FrameTablaMenu.winfo_children():
+    for tipo in ["Todos", "Entradas", "Principal", "Bebidas", "Postres"]:
+        ctk.CTkButton(ventana_menu, text=tipo, fg_color="#2FB166", hover_color="#2FB166",
+                      command=lambda t=tipo: mostrar_tabla_menu(menu_data, t),
+                      width=100, height=30, corner_radius=20).pack(side="left", padx=10)
+
+    ctk.CTkButton(ventana_menu, text="Agregar Producto", fg_color="#2FB166", hover_color="#2FB166",
+                  command=lambda: agregar_producto(menu_data),
+                  width=125, height=30, corner_radius=20).pack(side="right", padx=10)
+
+    ctk.CTkLabel(frame_busqueda, text="Doble clic para modificar el precio",
+                 text_color="white", font=("Lalezar", 20), anchor="center").pack()
+    ventana_menu.mainloop()
+
+def mostrar_tabla_menu(data, tipo="Todos"):
+    for widget in frame_tabla_menu.winfo_children():
         widget.destroy()
 
-    style = ttk.Style()
-    style.theme_use("clam")
-    style.configure("Custom.Treeview.Heading", background="#2FB166", foreground="black")
-    style.configure(
-        "Custom.Treeview", 
-        background="black",
-        foreground="white",
-        fieldbackground="black",
-        highlightthickness=0,
-        highlightbackground="black", 
-        bd=1,
-        relief="solid"
-    )
-    style.map("Custom.Treeview", background=[("selected", "#2FB166")])
+    anchos = {"Tipo": 100, "Producto": 200, "Precio": 100}
+    tree = _crear_treeview(frame_tabla_menu, ["Tipo", "Producto", "Precio"], anchos)
 
-    tree = ttk.Treeview(FrameTablaMenu, style="Custom.Treeview")
-    tree.pack(fill="both", expand=True, side="left")
-
-    tree["columns"] = ["Tipo", "Producto", "Precio"]
-    tree["show"] = "headings"
-
-    AnchoColumnas = {
-        "Tipo": 100,
-        "Producto": 200,
-        "Precio": 100,
-    }
-
-    for col in tree["columns"]:
-        tree.heading(col, text=col)
-        tree.column(col, width=AnchoColumnas.get(col, 100), anchor="center")
-
-    productos_a_mostrar = []
+    items = []
     if tipo == "Todos":
         for categoria, productos in data.items():
             for producto, precio in productos.items():
-                productos_a_mostrar.append((categoria, producto, precio))
+                items.append((categoria, producto, precio))
     else:
-        productos = data.get(tipo, {})
-        for producto, precio in productos.items():
-            productos_a_mostrar.append((tipo, producto, precio))
+        for producto, precio in data.get(tipo, {}).items():
+            items.append((tipo, producto, precio))
 
-    for tipo, producto, precio in productos_a_mostrar:
-        tree.insert("", "end", values=(tipo, producto, precio))
+    for row in items:
+        tree.insert("", "end", values=row)
 
-    tree.bind("<Double-1>", lambda event, tree=tree, data=data: EditarPrecioMenu(event, tree, data))
+    tree.bind("<Double-1>", lambda e: editar_precio_menu(e, tree, data))
 
-
-def EditarPrecioMenu(event, tree, data):
-    item = tree.selection()[0]
-    col = tree.identify_column(event.x)
-    col = col.split("#")[-1]
-    col = int(col) - 1
-
+def editar_precio_menu(event, tree, data):
+    item = tree.selection()
+    if not item:
+        return
+    item = item[0]
+    col = int(tree.identify_column(event.x).split("#")[-1]) - 1
     if col == 2:
-        producto = tree.item(item, "values")[1]
-        tipo = tree.item(item, "values")[0]
-        PrecioActual = tree.item(item, "values")[2]
+        tipo, producto, actual = tree.item(item, "values")
+        nuevo = simpledialog.askstring("Editar Precio",
+                                       f"Nuevo precio para {producto} ({tipo}):",
+                                       initialvalue=actual)
+        if nuevo:
+            tree.item(item, values=(tipo, producto, nuevo))
+            if tipo in data and producto in data[tipo]:
+                data[tipo][producto] = int(nuevo)
+            with open("src/JSON/Menu.json", "w", encoding="utf-8") as f:
+                json.dump([data], f, ensure_ascii=False, indent=4)
 
-        PrecioNuevo = simpledialog.askstring("Editar Precio", f"Nuevo precio para {producto} ({tipo}):", initialvalue=PrecioActual)
-
-        if PrecioNuevo:
-            tree.item(item, values=(tipo, producto, PrecioNuevo))
-            for categoria, productos in data.items():
-                if tipo == categoria and producto in productos:
-                    productos[producto] = int(PrecioNuevo)
-
-            GuardarMenuJSON(data)
-
-def AgregarProducto(data):
-    tipo = simpledialog.askstring("Nuevo Producto", "Ingrese el tipo de comida (Entradas, Principal, Bebidas, Postres):")
+def agregar_producto(data):
+    tipo = simpledialog.askstring("Nuevo Producto",
+                                  "Tipo (Entradas, Principal, Bebidas, Postres):")
     if tipo not in data:
-        messagebox.showerror("ERROR" , "Tipo no válido.")
+        messagebox.showerror("ERROR", "Tipo no válido.")
         return
-
-    producto = simpledialog.askstring("Nuevo Producto", "Ingrese el nombre del nuevo producto:")
-    precio = simpledialog.askstring("Nuevo Producto", "Ingrese el precio del nuevo producto:")
-
+    producto = simpledialog.askstring("Nuevo Producto", "Nombre del producto:")
+    precio_str = simpledialog.askstring("Nuevo Producto", "Precio:")
     try:
-        precio = int(precio)
-    except ValueError:
-        messagebox.showerror("ERROR" , "Precio no válido.")
-        return
+        data[tipo][producto] = int(precio_str)
+        mostrar_tabla_menu(data)
+        with open("src/JSON/Menu.json", "w", encoding="utf-8") as f:
+            json.dump([data], f, ensure_ascii=False, indent=4)
+    except (ValueError, TypeError):
+        messagebox.showerror("ERROR", "Precio no válido.")
 
-    data[tipo][producto] = precio
+# ---------- RESTAURANTE ----------
+ARCHIVO_RESTAURANTE = 'src/JSON/Restaurante.json'
 
-    MostrarTablaDeMenu(data)
-    GuardarMenuJSON(data)
-
-def PantallaMenu():
-    global ventanaMenu, FrameTablaMenu, tree , FrameBusquedaMenu
-    ventanaMenu = Toplevel(ventanaAdministrador)
-    ventanaMenu.title("Menú de Precios")
-    ventanaMenu.geometry("800x600")
-    ventanaMenu.resizable(False, False)
-    ventanaMenu.attributes("-fullscreen", False)
-    ventanaMenu.configure(background="black")
-
-    FrameTablaMenu = ctk.CTkFrame(ventanaMenu, fg_color="black")
-    FrameTablaMenu.pack(fill="both", expand=True)
-
-    tree = ttk.Treeview(FrameTablaMenu, style="Custom.Treeview")
-    tree.pack(fill="both", expand=True, side="left")
-
-    scrollbar = ttk.Scrollbar(FrameTablaMenu, orient="vertical", command=tree.yview)
-    scrollbar.pack(side="right", fill="y")
-    tree.configure(yscrollcommand=scrollbar.set)
-    
-    FrameBusquedaMenu = ctk.CTkFrame(ventanaMenu, fg_color="black", bg_color="black")
-    FrameBusquedaMenu.pack(pady=10, fill="x", side="bottom")
-
-
-def GestionarMenu():
-    PantallaMenu()
-    MenuData = LeerMenuJSON("src/JSON/Menu.json")
-    if MenuData:
-        MostrarTablaDeMenu(MenuData)
-    else:
-        messagebox.showerror("ERROR" , "No hay datos de menú disponibles.")
-
-    tipos = ["Todos", "Entradas", "Principal", "Bebidas", "Postres"]
-    for tipo in tipos:
-        boton = ctk.CTkButton(
-            ventanaMenu,
-            text=tipo,
-            fg_color="#2FB166" ,
-            hover_color="#2FB166" ,
-            command=lambda tipo=tipo: MostrarTablaDeMenu(MenuData, tipo),
-            width=100,
-            height=30,
-            corner_radius=20
-        )
-        boton.pack(side="left", padx=10)
-    
-    BotonAgregarProducto = ctk.CTkButton(
-        ventanaMenu,
-        text="Agregar Producto", 
-        command=lambda: AgregarProducto(MenuData), 
-        fg_color="#2FB166" ,
-        hover_color="#2FB166" ,
-        width=125,
-        height= 30,
-        corner_radius=20
-        )
-    BotonAgregarProducto.pack(side="right", padx=10)
-    
-    texto = ctk.CTkLabel(
-        FrameBusquedaMenu,
-        text="Doble clic para modificar el precio de los productos",
-        text_color="white",
-        width=100,
-        height=20,
-        font=("Lalezar", 20),
-        anchor="center",
-        justify='center'
-    )
-    texto.pack()
-
-    ventanaMenu.mainloop()
-
-def PantallaDisponibilidad():
-    global ventanaDisponibilidad, FrameTablaDisponibilidad, FrameTextoDisponibilidad
-    ventanaDisponibilidad = Toplevel()
-    ventanaDisponibilidad.title("Disponibilidad de Mesas")
-    ventanaDisponibilidad.geometry("450x450")
-    ventanaDisponibilidad.resizable(False, False)
-    ventanaDisponibilidad.configure(background="black")
-
-    FrameTablaDisponibilidad = ctk.CTkFrame(ventanaDisponibilidad, fg_color="black")
-    FrameTablaDisponibilidad.pack(fill="both", expand=True)
-
-    FrameTextoDisponibilidad = ctk.CTkFrame(ventanaDisponibilidad, fg_color="black" , bg_color="black")
-    FrameTextoDisponibilidad.pack(fill="x", side="bottom", pady=10)
-
-def LeerDisponibilidadJSON(archivo_json):
+def cargar_datos_restaurante():
     try:
-        with open(archivo_json, "r", encoding="utf-8") as archivo:
-            data = json.load(archivo)
-        return data[0]
+        with open(ARCHIVO_RESTAURANTE, 'r') as f:
+            return json.load(f)
     except FileNotFoundError:
-        messagebox.showerror("ERROR" , f" El archivo {archivo_json} no fue encontrado.")
-        return {}
-    except json.JSONDecodeError:
-        messagebox.showerror("ERROR" , "El archivo no es un JSON válido.")
-        return {}
+        return [{"Lunes": {"Lugares Disponibles": 50, "Lugares Ocupados": 0}}]
 
-def ProcesarDisponibilidad(data):
-    filas = []
-    for dia, info in data.items():
-        fila = {
-            "Día": dia,
-            "Lugares Disponibles": info["Lugares Disponibles"],
-            "Lugares Ocupados": info["Lugares Ocupados"]
-        }
-        filas.append(fila)
-    return pd.DataFrame(filas)
+def guardar_datos_restaurante(datos):
+    with open(ARCHIVO_RESTAURANTE, 'w') as f:
+        json.dump(datos, f, indent=4)
 
-def MostrarDatosDisponibilidad(data):
-    style = ttk.Style()
-    style.theme_use("clam")
-    style.configure("Custom.Treeview.Heading", background="#2FB166", foreground="black")
-    style.configure("Custom.Treeview", background="black", foreground="white", fieldbackground="black")
-    style.map("Custom.Treeview", background=[("selected", "#2FB166")])
+def ver_disponibilidad():
+    global frame_tabla_disponibilidad
 
-    for widget in FrameTablaDisponibilidad.winfo_children():
-        widget.destroy()
+    ventana_disp = Toplevel(ventana_administrador)
+    ventana_disp.title("Disponibilidad de Mesas")
+    ventana_disp.geometry("450x450")
+    ventana_disp.resizable(False, False)
+    ventana_disp.configure(background="black")
 
-    tree = ttk.Treeview(FrameTablaDisponibilidad, style="Custom.Treeview")
-    tree.pack(fill="both", expand=True, side="left")
+    frame_tabla_disponibilidad = ctk.CTkFrame(ventana_disp, fg_color="black")
+    frame_tabla_disponibilidad.pack(fill="both", expand=True)
 
-    scrollbar = ttk.Scrollbar(FrameTablaDisponibilidad, orient="vertical", command=tree.yview)
-    scrollbar.pack(side="right", fill="y")
-    tree.configure(yscrollcommand=scrollbar.set)
+    frame_texto = ctk.CTkFrame(ventana_disp, fg_color="black", bg_color="black")
+    frame_texto.pack(fill="x", side="bottom", pady=10)
 
-    tree["columns"] = ["Día", "Lugares Disponibles", "Lugares Ocupados"]
-    tree["show"] = "headings"
-
-    ancho_columnas = {"Día": 150, "Lugares Disponibles": 100, "Lugares Ocupados": 100}
-    for col in tree["columns"]:
-        tree.heading(col, text=col)
-        tree.column(col, width=ancho_columnas.get(col, 100), anchor="center")
-
-    for dia, info in data.items():
-        tree.insert("", "end", values=(dia, info["Lugares Disponibles"], info["Lugares Ocupados"]))
-
-    tree.bind("<Double-1>", lambda event, tree=tree, data=data: EditarLugaresDisponibles(event, tree, data))
-
-def EditarLugaresDisponibles(event, tree, data):
-    item_id = tree.selection()[0]
-    column = tree.identify_column(event.x)
-    column = int(column.split("#")[-1]) - 1
-
-    if column == 1:
-        dia = tree.item(item_id, "values")[0]
-        lugares_actual = tree.item(item_id, "values")[1]
-        nuevo_valor = simpledialog.askstring("Editar Lugares Disponibles", f"Nueva cantidad de lugares para {dia}:", initialvalue=lugares_actual)
-
-        if nuevo_valor:
-            try:
-                nuevo_valor = int(nuevo_valor)
-                tree.set(item_id, column="Lugares Disponibles", value=nuevo_valor)
-
-                data[dia]["Lugares Disponibles"] = nuevo_valor
-
-                with open("src/JSON/Restaurante.json", "w", encoding="utf-8") as archivo:
-                    json.dump([data], archivo, ensure_ascii=False, indent=4)
-
-            except ValueError:
-                messagebox.showerror("ERROR" , "Introduzca un número válido.")
-
-def VerDisponibilidad():
-    PantallaDisponibilidad()
-    data_disponibilidad = LeerDisponibilidadJSON("src/JSON/Restaurante.json")
-
-    if data_disponibilidad:
-        MostrarDatosDisponibilidad(data_disponibilidad)
+    data = cargar_datos_restaurante()[0]
+    if data:
+        mostrar_datos_disponibilidad(data)
     else:
         messagebox.showerror("Error", "No hay datos disponibles.")
 
-    texto = ctk.CTkLabel(
-        FrameTextoDisponibilidad,
-        text="Doble clic para modificar lugares disponibles",
-        text_color="white",
-        width=100,
-        height=20,
-        font=("Lalezar", 20),
-        anchor="center",
-        justify='center'
-    )
-    texto.pack()
+    ctk.CTkLabel(frame_texto, text="Doble clic para modificar lugares disponibles",
+                 text_color="white", font=("Lalezar", 20), anchor="center").pack()
+    ventana_disp.mainloop()
 
-    ventanaDisponibilidad.mainloop()
+def mostrar_datos_disponibilidad(data):
+    for widget in frame_tabla_disponibilidad.winfo_children():
+        widget.destroy()
 
-Administrador()
-ventanaAdministrador.mainloop()
+    anchos = {"Día": 150, "Lugares Disponibles": 100, "Lugares Ocupados": 100}
+    tree = _crear_treeview(frame_tabla_disponibilidad,
+                           ["Día", "Lugares Disponibles", "Lugares Ocupados"], anchos)
+
+    for dia, info in data.items():
+        tree.insert("", "end",
+                    values=(dia, info["Lugares Disponibles"], info["Lugares Ocupados"]))
+
+    tree.bind("<Double-1>", lambda e: editar_lugares(e, tree, data))
+
+def editar_lugares(event, tree, data):
+    item = tree.selection()
+    if not item:
+        return
+    item = item[0]
+    col = int(tree.identify_column(event.x).split("#")[-1]) - 1
+    if col == 1:
+        dia = tree.item(item, "values")[0]
+        actual = tree.item(item, "values")[1]
+        nuevo = simpledialog.askstring("Editar Lugares",
+                                       f"Nueva cantidad para {dia}:", initialvalue=actual)
+        if nuevo:
+            try:
+                nuevo = int(nuevo)
+                tree.set(item, column="Lugares Disponibles", value=nuevo)
+                data[dia]["Lugares Disponibles"] = nuevo
+                with open(ARCHIVO_RESTAURANTE, "w", encoding="utf-8") as f:
+                    json.dump([data], f, ensure_ascii=False, indent=4)
+            except ValueError:
+                messagebox.showerror("ERROR", "Ingresá un número válido.")
+
+# ---------- MAIN ----------
+administrador()
+ventana_administrador.mainloop()

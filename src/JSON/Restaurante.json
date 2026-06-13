@@ -9,24 +9,24 @@
             "Lugares Ocupados": 8
         },
         "Miercoles": {
-            "Lugares Disponibles": 50,
+            "Lugares Disponibles": 100,
             "Lugares Ocupados": 0
         },
         "Jueves": {
-            "Lugares Disponibles": 120,
-            "Lugares Ocupados": 24
+            "Lugares Disponibles": 100,
+            "Lugares Ocupados": 0
         },
         "Viernes": {
-            "Lugares Disponibles": 14,
-            "Lugares Ocupados": 36
+            "Lugares Disponibles": 100,
+            "Lugares Ocupados": 0
         },
         "Sabado": {
-            "Lugares Disponibles": 17,
-            "Lugares Ocupados": 33
+            "Lugares Disponibles": 100,
+            "Lugares Ocupados": 0
         },
         "Domingo": {
-            "Lugares Disponibles": 47,
-            "Lugares Ocupados": 3
+            "Lugares Disponibles": 100,
+            "Lugares Ocupados": 0
         }
     }
 ]

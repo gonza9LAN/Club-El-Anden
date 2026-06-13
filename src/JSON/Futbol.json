@@ -46,7 +46,7 @@
                 "13:00": "Disponible",
                 "14:00": "Disponible",
                 "15:00": "Disponible",
-                "16:00": "Reservada",
+                "16:00": "Disponible",
                 "17:00": "Disponible",
                 "18:00": "Disponible",
                 "19:00": "Disponible",
@@ -147,7 +147,7 @@
                 "20:00": "Disponible",
                 "21:00": "Disponible",
                 "22:00": "Disponible",
-                "23:00": "Reservada"
+                "23:00": "Disponible"
             },
             "Martes": {
                 "08:00": "Disponible",
@@ -155,7 +155,7 @@
                 "10:00": "Disponible",
                 "11:00": "Disponible",
                 "12:00": "Disponible",
-                "13:00": "Reservada",
+                "13:00": "Disponible",
                 "14:00": "Disponible",
                 "15:00": "Disponible",
                 "16:00": "Disponible",
@@ -192,15 +192,15 @@
                 "11:00": "Disponible",
                 "12:00": "Disponible",
                 "13:00": "Disponible",
-                "14:00": "Reservada",
+                "14:00": "Disponible",
                 "15:00": "Disponible",
                 "16:00": "Disponible",
                 "17:00": "Disponible",
                 "18:00": "Disponible",
                 "19:00": "Disponible",
                 "20:00": "Disponible",
-                "21:00": "Reservada",
-                "22:00": "Reservada",
+                "21:00": "Disponible",
+                "22:00": "Disponible",
                 "23:00": "Disponible"
             },
             "Viernes": {
@@ -271,13 +271,13 @@
                 "14:00": "Disponible",
                 "15:00": "Disponible",
                 "16:00": "Disponible",
-                "17:00": "Reservada",
+                "17:00": "Disponible",
                 "18:00": "Disponible",
                 "19:00": "Disponible",
                 "20:00": "Disponible",
                 "21:00": "Disponible",
                 "22:00": "Disponible",
-                "23:00": "Reservada"
+                "23:00": "Disponible"
             },
             "Martes": {
                 "08:00": "Disponible",
@@ -285,7 +285,7 @@
                 "10:00": "Disponible",
                 "11:00": "Disponible",
                 "12:00": "Disponible",
-                "13:00": "Reservada",
+                "13:00": "Disponible",
                 "14:00": "Disponible",
                 "15:00": "Disponible",
                 "16:00": "Disponible",
@@ -304,9 +304,9 @@
                 "11:00": "Disponible",
                 "12:00": "Disponible",
                 "13:00": "Disponible",
-                "14:00": "Reservada",
+                "14:00": "Disponible",
                 "15:00": "Disponible",
-                "16:00": "Reservada",
+                "16:00": "Disponible",
                 "17:00": "Disponible",
                 "18:00": "Disponible",
                 "19:00": "Disponible",
@@ -348,7 +348,7 @@
                 "19:00": "Disponible",
                 "20:00": "Disponible",
                 "21:00": "Disponible",
-                "22:00": "Reservada",
+                "22:00": "Disponible",
                 "23:00": "Disponible"
             },
             "Sabado": {
@@ -365,7 +365,7 @@
                 "18:00": "Disponible",
                 "19:00": "Disponible",
                 "20:00": "Disponible",
-                "21:00": "Reservada",
+                "21:00": "Disponible",
                 "22:00": "Disponible",
                 "23:00": "Disponible"
             },
@@ -424,7 +424,7 @@
                 "19:00": "Disponible",
                 "20:00": "Disponible",
                 "21:00": "Disponible",
-                "22:00": "Reservada",
+                "22:00": "Disponible",
                 "23:00": "Disponible"
             },
             "Miercoles": {
@@ -435,11 +435,11 @@
                 "12:00": "Disponible",
                 "13:00": "Disponible",
                 "14:00": "Disponible",
-                "15:00": "Reservada",
+                "15:00": "Disponible",
                 "16:00": "Disponible",
                 "17:00": "Disponible",
                 "18:00": "Disponible",
-                "19:00": "Reservada",
+                "19:00": "Disponible",
                 "20:00": "Disponible",
                 "21:00": "Disponible",
                 "22:00": "Disponible",
@@ -479,7 +479,7 @@
                 "20:00": "Disponible",
                 "21:00": "Disponible",
                 "22:00": "Disponible",
-                "23:00": "Reservada"
+                "23:00": "Disponible"
             },
             "Sabado": {
                 "08:00": "Disponible",
@@ -522,9 +522,9 @@
     {
         "Cancha 5 (F8)": {
             "Lunes": {
-                "08:00": "Reservada",
+                "08:00": "Disponible",
                 "09:00": "Disponible",
-                "10:00": "Reservada",
+                "10:00": "Disponible",
                 "11:00": "Disponible",
                 "12:00": "Disponible",
                 "13:00": "Disponible",
@@ -736,7 +736,7 @@
                 "17:00": "Disponible",
                 "18:00": "Disponible",
                 "19:00": "Disponible",
-                "20:00": "Reservada",
+                "20:00": "Disponible",
                 "21:00": "Disponible",
                 "22:00": "Disponible",
                 "23:00": "Disponible"
