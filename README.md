@@ -8,6 +8,8 @@ Sistema de escritorio desarrollado en Python para la gestión integral de un com
 
 El Andén es una aplicación de escritorio construida con `customtkinter` que permite a los usuarios registrarse, iniciar sesión y gestionar reservas de canchas y mesas del restaurante, mientras que los administradores pueden supervisar disponibilidad, precios y reservas en tiempo real.
 
+> **Nota:** Este proyecto fue desarrollado originalmente en equipo en un repositorio privado. Este repositorio es una copia personal donde apliqué mejoras de seguridad y refactorización al código original.
+
 ---
 
 ## ✨ Funcionalidades
@@ -37,29 +39,52 @@ El Andén es una aplicación de escritorio construida con `customtkinter` que pe
 ---
 
 ## 🗂️ Estructura del Proyecto
-
-```
+---
 El-Anden/
+
 ├── src/
-│   ├── ElAnden.py          # Aplicación principal (usuario)
+
+│   ├── main.py               # Aplicación principal (usuario)
+
 │   ├── Admin.py              # Panel de administración
+
 │   ├── JSON/
+
 │   │   ├── Usuarios.json
+
 │   │   ├── Reservas.json
+
 │   │   ├── ReservasRestaurante.json
+
 │   │   ├── Futbol.json
+
 │   │   ├── Tenis.json
+
 │   │   ├── Padel.json
+
 │   │   ├── Menu.json
+
 │   │   ├── Precios.json
+
 │   │   └── Restaurante.json
+
 │   └── Imagenes/
+
 │       ├── Fondos/
+
 │       ├── Botones/
-│       └── FotosPerfil/
+
+│       ├── FotosPerfil/
+
 │       └── Productos/
+
+├── .env.example
+
+├── .gitignore
+
+├── requirements.txt
+
 └── README.md
-```
 
 ---
 
@@ -88,13 +113,17 @@ git clone https://github.com/tu-usuario/El-Anden.git
 cd El-Anden
 
 # Instalar dependencias
-pip install customtkinter pillow pandas qrcode smtplib
+pip install -r requirements.txt
+
+# Configurar variables de entorno
+cp .env.example .env
+# Editar .env con tus credenciales
 
 # Instalar la fuente Lalezar (incluida en el repositorio)
 # Hacer doble clic en el archivo .ttf e instalar
 
 # Ejecutar la aplicación
-python "src/#EL ANDEN.py"
+python src/main.py
 
 # Ejecutar el panel de administración
 python src/Admin.py
