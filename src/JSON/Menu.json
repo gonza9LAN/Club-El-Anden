@@ -20,8 +20,7 @@
             "Sandwich J&Q": 3500,
             "Ensalada Cesar": 3000,
             "Pechuga a la Parrilla": 4800,
-            "Carne": 2500,
-            "sushi": 10000000
+            "Bife Americano": 2500
         },
         "Bebidas": {
             "Agua": 1500,
@@ -30,9 +29,7 @@
             "Jugo Natural": 1800,
             "Te Helado": 1600,
             "Gaseosa": 1700,
-            "Limonada": 1800,
-            "Fernet con Coca": 2600,
-            "Nuvo": 70000
+            "Limonada": 1800
         },
         "Postres": {
             "Flan": 2600,
@@ -42,8 +39,7 @@
             "Bocha de Helado": 2200,
             "Lemon Pie": 3600,
             "Tiramisu": 2800,
-            "Budin de Pan": 2600,
-            "ensalda de fruta": 2000
+            "Budin de Pan": 2600
         }
     }
 ]
